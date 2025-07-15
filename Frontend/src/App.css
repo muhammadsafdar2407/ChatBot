@@ -1,0 +1,270 @@
+.App {
+  text-align: center;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+/* Sidebar Styles */
+.sidebar-header {
+  padding: 20px;
+  background-color: #075e54;
+  color: white;
+  text-align: left;
+  border-bottom: 1px solid #128c7e;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Chat Header Styles */
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #075e54;
+  color: white;
+  border-bottom: 1px solid #128c7e;
+}
+
+.chat-header-info {
+  margin-left: 15px;
+  text-align: left;
+}
+
+.chat-header-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.online-status {
+  font-size: 0.8rem;
+  color: #4fc3f7;
+  margin-top: 2px;
+  display: block;
+}
+
+/* Welcome Screen Styles */
+.welcome-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.welcome-content {
+  text-align: center;
+  max-width: 400px;
+  padding: 40px;
+}
+
+.welcome-content h2 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  font-weight: 300;
+}
+
+.welcome-content p {
+  font-size: 1.1rem;
+  margin-bottom: 40px;
+  opacity: 0.9;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+}
+
+/* PIN Modal Styles */
+.pin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.pin-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.pin-modal h3 {
+  margin-top: 0;
+  color: #075e54;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.pin-modal p {
+  color: #666;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.pin-input-container {
+  margin-bottom: 25px;
+}
+
+.pin-input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  text-align: center;
+  letter-spacing: 0.5rem;
+  transition: border-color 0.3s;
+}
+
+.pin-input:focus {
+  outline: none;
+  border-color: #075e54;
+}
+
+.pin-modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.cancel-btn, .verify-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.cancel-btn {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+}
+
+.verify-btn {
+  background: #075e54;
+  color: white;
+}
+
+.verify-btn:hover:not(:disabled) {
+  background: #128c7e;
+}
+
+.verify-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .welcome-content h2 {
+    font-size: 2rem;
+  }
+  
+  .features {
+    gap: 15px;
+  }
+  
+  .pin-modal {
+    padding: 20px;
+  }
+  
+  .pin-modal-buttons {
+    flex-direction: column;
+  }
+}
+
+/* Override default chat styles */
+.cs-main-container {
+  border-radius: 0 !important;
+}
+
+.cs-sidebar {
+  border-right: 1px solid #e0e0e0 !important;
+}
+
+.cs-conversation {
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.cs-conversation--active {
+  background: #f5f5f5 !important;
+}
+
+.cs-message-input {
+  border-top: 1px solid #e0e0e0 !important;
+}
+
+.cs-message--incoming .cs-message__content {
+  background: #f0f0f0 !important;
+  color: #333 !important;
+}
+
+.cs-message--outgoing .cs-message__content {
+  background: #dcf8c6 !important;
+  color: #333 !important;
+}
+
+/* override Chatscope's internal message list background */
+:global(.cs-message-list__scroll-wrapper) {
+  background-color: #f9fbfd;
+  background-image: url("https://www.transparenttextures.com/patterns/clean-textile.png");
+  background-repeat: repeat;
+}
