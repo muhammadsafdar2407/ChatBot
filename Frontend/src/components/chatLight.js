@@ -85,7 +85,7 @@ const ChatLight = () => {
       });
 
       const data = response.data;
-      const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12:false });
 
       if (Array.isArray(data.services)) {
         const serviceObjects = data.services.map((s) => ({
@@ -131,7 +131,7 @@ const ChatLight = () => {
 
   // Handle user input (PIN or text message)
   const handleSend = async (text) => {
-    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12:false });
 
     // If awaiting service selection and user types something other than selecting a service
     if (awaitingServiceSelection[selectedContactId] && pinVerified[selectedContactId]) {
@@ -143,7 +143,7 @@ const ChatLight = () => {
           {
             direction: "incoming",
             message: "Please select a service from above.",
-            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12:false }),
           },
         ],
       }));
@@ -199,7 +199,7 @@ const ChatLight = () => {
 
   // Handle service click
   const handleServiceClick = async (service) => {
-    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12:false });
 
     // Add user-selected service as a message
     setMessages((prev) => ({
@@ -225,7 +225,7 @@ const ChatLight = () => {
       });
 
       const data = response.data;
-      const newTimestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const newTimestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12:false });
 
       if (Array.isArray(data.services)) {
         const newServices = data.services.map((s) => ({
