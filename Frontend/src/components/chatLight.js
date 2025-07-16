@@ -8,8 +8,8 @@ const ChatLight = () => {
   const [selectedContactId, setSelectedContactId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [messages, setMessages] = useState({});
-  const [services, setServices] = useState([]);
-  const [pinVerified, setPinVerified] = useState(false);
+  const [pinVerified, setPinVerified] = useState({});
+  const [awaitingServiceSelection, setAwaitingServiceSelection] = useState({});
 
   const getAuthHeader = () => {
     const token = localStorage.getItem("authToken");
@@ -18,6 +18,19 @@ const ChatLight = () => {
         Authorization: `Bearer ${token}`,
       },
     };
+  };
+
+  // Reset conversation state when switching contacts
+  const handleContactSwitch = (contactId) => {
+    setSelectedContactId(contactId);
+    // Optional: Reset awaiting service selection when switching contacts
+    // This prevents confusion if user was mid-selection in another chat
+    if (awaitingServiceSelection[contactId]) {
+      setAwaitingServiceSelection(prev => ({
+        ...prev,
+        [contactId]: false
+      }));
+    }
   };
 
   // Fetch businesses
@@ -40,7 +53,7 @@ const ChatLight = () => {
             {
               direction: "incoming",
               message: "Welcome! Please enter your PIN to proceed.",
-              timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }),
             },
           ];
         });
@@ -55,52 +68,87 @@ const ChatLight = () => {
     fetchBusinesses();
   }, []);
 
-  useEffect(() => {
-  if (selectedContactId && pinVerified) {
-    fetchServices(selectedContactId, null); // load fresh services
-  }
-}, [selectedContactId, pinVerified]);
+  // useEffect(() => {
+  //   if (selectedContactId && pinVerified[selectedContactId]) {
+  //     fetchInitialServices(selectedContactId);
+  //   }
+  // }, [selectedContactId, pinVerified]);
 
-  // Fetch services
-  const fetchServices = async (businessId, parentServiceId = null) => {
-  try {
-    setServices([]); // Clear before fetch
-    const response = await axios.get("http://localhost:5000/service/get_all_services", {
-      params: {
-        buisness_id: businessId,
-        parent_service_id: parentServiceId ?? null,
-      },
-    });
+  // Fetch initial services and add them to messages
+  const fetchInitialServices = async (businessId) => {
+    try {
+      const response = await axios.get("http://localhost:5000/service/get_all_services", {
+        params: {
+          buisness_id: businessId,
+          parent_service_id: null,
+        },
+      });
 
-    const data = response.data;
-    if (Array.isArray(data.services)) {
-      const serviceObjects = data.services.map((s) => ({
-        name: s.name,
-        id: s.id, // Assuming backend returns id too
-      }));
-      setServices(serviceObjects);
-    } else if (data.message) {
-      setServices([]);
+      const data = response.data;
+      const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+      if (Array.isArray(data.services)) {
+        const serviceObjects = data.services.map((s) => ({
+          name: s.name,
+          id: s.id,
+        }));
+
+        // Add services as a message in the chat
+        setMessages((prev) => ({
+          ...prev,
+          [businessId]: [
+            ...(prev[businessId] || []),
+            {
+              direction: "incoming",
+              message: "",
+              timestamp,
+              services: serviceObjects,
+              messageType: "services"
+            },
+          ],
+        }));
+        setAwaitingServiceSelection(prev => ({
+          ...prev,
+          [businessId]: true
+        }));
+      } else if (data.message) {
+        setMessages((prev) => ({
+          ...prev,
+          [businessId]: [
+            ...(prev[businessId] || []),
+            {
+              direction: "incoming",
+              message: data.message,
+              timestamp,
+            },
+          ],
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to fetch services:", err);
+    }
+  };
+
+  // Handle user input (PIN or text message)
+  const handleSend = async (text) => {
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+    // If awaiting service selection and user types something other than selecting a service
+    if (awaitingServiceSelection[selectedContactId] && pinVerified[selectedContactId]) {
       setMessages((prev) => ({
         ...prev,
-        [businessId]: [
-          ...(prev[businessId] || []),
+        [selectedContactId]: [
+          ...(prev[selectedContactId] || []),
+          { direction: "outgoing", message: text, timestamp },
           {
             direction: "incoming",
-            message: data.message,
+            message: "Please select a service from above.",
             timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           },
         ],
       }));
+      return;
     }
-  } catch (err) {
-    console.error("Failed to fetch services:", err);
-  }
-};
-
-  // Handle user input (PIN or message)
-  const handleSend = async (text) => {
-    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
     setMessages((prev) => ({
       ...prev,
@@ -110,11 +158,14 @@ const ChatLight = () => {
       ],
     }));
 
-    if (!pinVerified) {
+    if (!pinVerified[selectedContactId]) {
       try {
         const res = await axios.post("http://localhost:5000/user/verifypin", { pin: text }, getAuthHeader());
         if (res.data.message === "pin verified") {
-          setPinVerified(true);
+          setPinVerified(prev => ({
+            ...prev,
+            [selectedContactId]: true
+          }));
           setMessages((prev) => ({
             ...prev,
             [selectedContactId]: [
@@ -126,7 +177,7 @@ const ChatLight = () => {
               },
             ],
           }));
-          await fetchServices(selectedContactId);
+          await fetchInitialServices(selectedContactId);
         } else {
           setMessages((prev) => ({
             ...prev,
@@ -148,61 +199,82 @@ const ChatLight = () => {
 
   // Handle service click
   const handleServiceClick = async (service) => {
-  // Step 1: Add user-selected service as a message
-  const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  setMessages((prev) => ({
-    ...prev,
-    [selectedContactId]: [
-      ...(prev[selectedContactId] || []),
-      { direction: "outgoing", message: service.name, timestamp },
-    ],
-  }));
+    // Add user-selected service as a message
+    setMessages((prev) => ({
+      ...prev,
+      [selectedContactId]: [
+        ...(prev[selectedContactId] || []),
+        { direction: "outgoing", message: service.name, timestamp },
+      ],
+    }));
 
-  // Step 2: Fetch sub-services based on this service ID
-  try {
-    const response = await axios.get("http://localhost:5000/service/get_all_services", {
-      params: {
-        buisness_id: selectedContactId,
-        parent_service_id: service.id,
-      },
-    });
+    setAwaitingServiceSelection(prev => ({
+      ...prev,
+      [selectedContactId]: false
+    }));
 
-    const data = response.data;
+    // Fetch sub-services based on this service ID
+    try {
+      const response = await axios.get("http://localhost:5000/service/get_all_services", {
+        params: {
+          buisness_id: selectedContactId,
+          parent_service_id: service.id,
+        },
+      });
 
-    if (Array.isArray(data.services)) {
-      const newServices = data.services.map((s) => ({
-        name: s.name,
-        id: s.id,
-      }));
-      setServices(newServices);
-      console.log(services);
-    } else if (data.message) {
-      // If no services found, show fallback message
-      setServices([]); // Clear old buttons
-      setMessages((prev) => ({
-        ...prev,
-        [selectedContactId]: [
-          ...(prev[selectedContactId] || []),
-          {
-            direction: "incoming",
-            message: data.message,
-            timestamp,
-          },
-        ],
-      }));
+      const data = response.data;
+      const newTimestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+      if (Array.isArray(data.services)) {
+        const newServices = data.services.map((s) => ({
+          name: s.name,
+          id: s.id,
+        }));
+
+        // Add new services as another message in the chat
+        setMessages((prev) => ({
+          ...prev,
+          [selectedContactId]: [
+            ...(prev[selectedContactId] || []),
+            {
+              direction: "incoming",
+              message: "",
+              timestamp: newTimestamp,
+              services: newServices,
+              messageType: "services"
+            },
+          ],
+        }));
+        setAwaitingServiceSelection(prev => ({
+          ...prev,
+          [selectedContactId]: true
+        }));
+      } else if (data.message) {
+        // If no services found, show fallback message
+        setMessages((prev) => ({
+          ...prev,
+          [selectedContactId]: [
+            ...(prev[selectedContactId] || []),
+            {
+              direction: "incoming",
+              message: data.message,
+              timestamp: newTimestamp,
+            },
+          ],
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to fetch sub-services", err);
     }
-  } catch (err) {
-    console.error("Failed to fetch sub-services", err);
-  }
-};
+  };
 
   return (
     <ChatLayout
       contacts={contacts}
-      services={pinVerified ? services : []}
       selectedContactId={selectedContactId}
-      setSelectedContactId={setSelectedContactId}
+      setSelectedContactId={handleContactSwitch}
       searchTerm={searchTerm}
       setSearchTerm={setSearchTerm}
       messages={messages}

@@ -13,18 +13,17 @@ const MessagePanel = ({
   contact,
   messages,
   onSend,
-  services,
   onServiceSelect,
 }) => {
   const messageListRef = useRef(null);
 
-  // Scroll to bottom when messages or services change
+  // Scroll to bottom when messages change
   useEffect(() => {
     if (messageListRef.current) {
       const node = messageListRef.current;
       node.scrollTop = node.scrollHeight;
     }
-  }, [messages, services]);
+  }, [messages]);
 
   return (
     <div
@@ -53,7 +52,7 @@ const MessagePanel = ({
           overflow: "hidden",
         }}
       >
-        {/* Scrollable area with messages and services */}
+        {/* Scrollable area with messages */}
         <MessageList
           ref={messageListRef}
           scrollBehavior="smooth"
@@ -62,7 +61,7 @@ const MessagePanel = ({
             padding: "20px",
             overflowY: "auto",
             backgroundColor: "#f9fbfd",
-            backgroundImage: `url('https://www.transparenttextures.com/patterns/clean-textile.png')`,
+            backgroundImage: "url('https://www.transparenttextures.com/patterns/clean-textile.png')",
             backgroundRepeat: "repeat",
           }}
         >
@@ -76,57 +75,63 @@ const MessagePanel = ({
               }}
             />
           ) : (
-            messages.map((msg, idx) => (
-              <Message
-                key={idx}
-                model={{
-                  direction: msg.direction,
-                  message: msg.message,
-                  position: "normal",
-                }}
-                style={{
-                  marginBottom: "10px",
-                  maxWidth: "75%",
-                  paddingLeft: "0px",
-                  alignSelf:
-                    msg.direction === "outgoing" ? "flex-end" : "flex-start",
-                }}
-              >
-                <Message.Footer
-                  sender={msg.direction === "incoming" ? contact.name : "You"}
-                  timestamp={msg.timestamp}
-                  style={{
-                    fontSize: "0.75em",
-                    opacity: 0.7,
-                    marginTop: "5px",
-                    textAlign:
-                      msg.direction === "outgoing" ? "right" : "left",
-                  }}
-                />
-                <Avatar
-                  src={
-                    msg.direction === "incoming"
-                      ? contact.avatar
-                      : "https://i.pravatar.cc/150?img=6"
-                  }
-                  name={
-                    msg.direction === "incoming" ? contact.name : "You"
-                  }
-                />
-              </Message>
-            ))
-          )}
+            messages.map((msg, idx) => {
+              // Check if this message contains services
+              if (msg.messageType === "services" && msg.services) {
+                return (
+                  <div key={idx} style={{ marginBottom: "10px" }}>
+                    <ServiceSelector
+                      services={msg.services}
+                      onSelect={onServiceSelect}
+                      avatar={contact?.avatar}
+                      contactName={contact?.name}
+                      timestamp={msg.timestamp}
+                    />
+                  </div>
+                );
+              }
 
-          {/* Render services below messages if verified */}
-          {services?.length > 0 && (
-            <div style={{ marginTop: "20px" }}>
-              <ServiceSelector
-                services={services}
-                onSelect={onServiceSelect}
-                avatar={contact?.avatar}
-                contactName={contact?.name}
-              />
-            </div>
+              // Regular message
+              return (
+                <Message
+                  key={idx}
+                  model={{
+                    direction: msg.direction,
+                    message: msg.message,
+                    position: "normal",
+                  }}
+                  style={{
+                    marginBottom: "10px",
+                    maxWidth: "75%",
+                    paddingLeft: "0px",
+                    alignSelf:
+                      msg.direction === "outgoing" ? "flex-end" : "flex-start",
+                  }}
+                >
+                  <Message.Footer
+                    sender={msg.direction === "incoming" ? contact.name : "You"}
+                    timestamp={msg.timestamp}
+                    style={{
+                      fontSize: "0.75em",
+                      opacity: 0.7,
+                      marginTop: "5px",
+                      textAlign:
+                        msg.direction === "outgoing" ? "right" : "left",
+                    }}
+                  />
+                  <Avatar
+                    src={
+                      msg.direction === "incoming"
+                        ? contact.avatar
+                        : "https://i.pravatar.cc/150?img=6"
+                    }
+                    name={
+                      msg.direction === "incoming" ? contact.name : "You"
+                    }
+                  />
+                </Message>
+              );
+            })
           )}
         </MessageList>
 

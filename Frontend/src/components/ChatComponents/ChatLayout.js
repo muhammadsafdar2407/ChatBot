@@ -5,7 +5,6 @@ import MessagePanel from "./MessagePanel";
 
 const ChatLayout = ({
   contacts,
-  services,
   selectedContactId,
   setSelectedContactId,
   searchTerm,
@@ -21,7 +20,7 @@ const ChatLayout = ({
       style={{
         height: "100vh",
         width: "100vw",
-        overflow: "hidden", // prevent scroll on full body
+        overflow: "hidden",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -52,7 +51,6 @@ const ChatLayout = ({
             contact={selectedContact}
             messages={messages[selectedContactId] || []}
             onSend={handleSend}
-            services={services}
             onServiceSelect={handleServiceClick}
           />
         </MainContainer>

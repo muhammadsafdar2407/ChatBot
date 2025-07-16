@@ -35,7 +35,6 @@ const ChatSidebar = ({
     >
       <div
         style={{
-          height: "70.5px",
           padding: "20px 25px",
           fontSize: "24px",
           fontWeight: "bold",
